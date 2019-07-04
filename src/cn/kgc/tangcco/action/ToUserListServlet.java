@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.kgc.tangcco.service.RoleService;
 import cn.kgc.tangcco.service.UserService;
 import cn.kgc.tangcco.util.PropertiesFactory;
 
@@ -28,9 +29,27 @@ public class ToUserListServlet extends HttpServlet {
 		String param=request.getParameter("param");
 		if(param.equals("userList")) {
 			queryAllUser(request,response);
+		}else if(param.equals("toUpdateRole")) {
+			toUpdateRole(request,response);
+		}else if(param.equals("doUpdateRole")) {
+			doUpdateRole(request,response);
 		}
 	}
-	
+	public void doUpdateRole(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String userId=request.getParameter("userId");
+		String[] roleIds=request.getParameter("str").split(",");
+		RoleService roleService=(RoleService) PropertiesFactory.getInstance("roleService");
+		int result=roleService.updateUserRole(userId, roleIds);
+		response.sendRedirect("toUserList.action?param=userList&message='成功'");
+	}
+	public void toUpdateRole(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String userId=request.getParameter("id");
+		RoleService roleService=(RoleService) PropertiesFactory.getInstance("roleService");
+		request.setAttribute("roles", roleService.queryRoleList());
+		request.setAttribute("userRoles", roleService.queryRoleByUserId(userId));
+		request.setAttribute("userId", userId);
+		request.getRequestDispatcher("/WEB-INF/jsp/user/updateUserRole.jsp").forward(request, response);
+	}
 	public void queryAllUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		UserService userService = (UserService) PropertiesFactory.getInstance("userService");
 		request.setAttribute("userList", userService.queryAllUser());
